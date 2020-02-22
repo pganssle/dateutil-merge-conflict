@@ -1,6 +1,24 @@
 import sys
 import unittest
 
+class ImportLazyImports(unittest.TestCase):
+    """ Test that dateutil.[submodule] works for py version > 3.7 """
+ 
+    def testLazyImportPyLessThan37(self):
+        import dateutil
+        modules = ['easter', 'parser', 'relativedelta', 'rrule', 'tz', 'utils',
+                   'zoneinfo']
+        if sys.version_info < (3, 7, 0):
+            for mod in modules:
+                self.assertFalse(hasattr(dateutil, mod))
+   
+    def testLazyImportPy37(self):
+        import dateutil
+        modules = ['easter', 'parser', 'relativedelta', 'rrule', 'tz', 'utils', 'zoneinfo']
+        if sys.version_info >= (3, 7, 0):
+            for mod in modules:
+                self.assertTrue(hasattr(dateutil, mod))
+       
 class ImportVersionTest(unittest.TestCase):
     """ Test that dateutil.__version__ can be imported"""
 
