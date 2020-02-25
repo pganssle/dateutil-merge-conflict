@@ -1,14 +1,25 @@
 import sys
 import unittest
 import pytest
+import six
 
 MODULE_TYPE = type(sys)
+
+
+# Tests live in datetutil/test which cause a RuntimeWarning for Python2 builds.
+# But since we expect lazy imports tests to fail for Python < 3.7  we'll ignore those
+# warnings with this filter.
+if six.P2:
+    filter_import_warning = pytest.mark.filterwarnings('RuntimeWarning')
+else:
+    def filter_import_warning(f): 
+        return f
+
 @pytest.fixture(scope='function') 
 def clean_import():
     """ Create a somewhat clean import base for lazy import tests """
     du_modules = {mod_name: mod for mod_name, mod in sys.modules.items()
-                  if mod_name.startswith('dateutil') 
-                  and not 'dateutil.test' in mod_name}
+                  if mod_name.startswith('dateutil')}
 
     other_modules = {mod_name for mod_name in sys.modules
                    if mod_name not in du_modules}
@@ -28,7 +39,7 @@ def clean_import():
     for mod_name, mod in du_modules.items():
         sys.modules[mod_name] = mod
 
-
+@filter_import_warning
 @pytest.mark.parametrize('module', ['easter', 'parser', 'relativedelta', 
                         'rrule', 'tz', 'utils', 'zoneinfo'])
 def test_lazy_import(clean_import, module):
