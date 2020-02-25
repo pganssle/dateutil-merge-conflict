@@ -4,19 +4,17 @@ import pytest
 
 MODULE_TYPE = type(sys)
 
-@pytest.fixture(scope='function', 
-                params=['easter', 'parser', 'relativedelta', 
-                        'rrule', 'tz', 'utils', 'zoneinfo'])
-def clean_import(module):
+@pytest.fixture(scope='function') 
+def clean_import():
     """ Create a somewhat clean import base for lazy import tests """
-    du_modules = {mod_name: mod for mod_name in sys.modules.items()
+    du_modules = {mod_name: mod for mod_name, mod in sys.modules.items()
                   if mod_name.startswith('dateutil')}
 
     other_modules = {mod_name for mod_name in sys.modules
                    if mod_name not in du_modules}
 
     for mod_name in du_modules:
-        del sys.modules
+        del sys.modules[mod_name]
 
     yield
 
@@ -30,22 +28,22 @@ def clean_import(module):
     for mod_name, mod in du_modules.items():
         sys.modules[mod_name] = mod
 
-def test_lazy_import(clean_import):
+
+@pytest.mark.parametrize('module', ['easter', 'parser', 'relativedelta', 
+                        'rrule', 'tz', 'utils', 'zoneinfo'])
+def test_lazy_import(clean_import, module):
     """ Test that dateutil.[submodule] works for py version > 3.7 """
 
     import dateutil, importlib
-    mod = clean_import.param
     if sys.version_info < (3, 7):
         pytest.xfail('Lazy loading does not work for Python < 3.7')
      
-    mod_obj = getattr(dateutil, mod, None)
+    mod_obj = getattr(dateutil, module, None)
     assert isinstance(mod_obj, MODULE_TYPE)
 
-    mod_imported = importlib.import_module('dateutil.%s' % mod)
+    mod_imported = importlib.import_module('dateutil.%s' % module)
     assert mod_obj is mod_imported 
     
-          
-
        
 class ImportVersionTest(unittest.TestCase):
     """ Test that dateutil.__version__ can be imported"""
