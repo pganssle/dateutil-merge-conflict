@@ -3,12 +3,12 @@ import unittest
 import pytest
 
 MODULE_TYPE = type(sys)
-
 @pytest.fixture(scope='function') 
 def clean_import():
     """ Create a somewhat clean import base for lazy import tests """
     du_modules = {mod_name: mod for mod_name, mod in sys.modules.items()
-                  if mod_name.startswith('dateutil')}
+                  if mod_name.startswith('dateutil') 
+                  and not 'dateutil.test' in mod_name}
 
     other_modules = {mod_name for mod_name in sys.modules
                    if mod_name not in du_modules}
