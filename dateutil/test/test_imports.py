@@ -9,7 +9,6 @@ MODULE_TYPE = type(sys)
 # Tests live in datetutil/test which cause a RuntimeWarning for Python2 builds.
 # But since we expect lazy imports tests to fail for Python < 3.7  we'll ignore those
 # warnings with this filter.
-
 if six.PY2:
     filter_import_warning = pytest.mark.filterwarnings('ignore::RuntimeWarning')
 else:
